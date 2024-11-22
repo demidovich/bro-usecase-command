@@ -1,0 +1,45 @@
+{
+    "name": "demidovich/e1-valid-dto",
+    "description": "Simple DTO validation for Laravel.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "php",
+        "dto",
+        "laravel"
+    ],
+    "authors": [
+        {
+            "name": "Dmitrij Demidovich",
+            "email": "dmitrij.demidovich@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "illuminate/validation": "^8.0 || ^9.0 || ^10.0 || ^11.0"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.44",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.4",
+        "symfony/var-dumper": "^7.1"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "E1\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        }
+    }
+}
