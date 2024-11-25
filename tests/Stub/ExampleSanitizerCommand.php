@@ -2,8 +2,8 @@
 
 namespace Tests\Stub;
 
+use Bro\UsecaseCommand;
 use Illuminate\Contracts\Translation\Translator as TranslatorContract;
-use Softdomain\UsecaseCommand;
 
 class ExampleSanitizerCommand extends UsecaseCommand
 {
