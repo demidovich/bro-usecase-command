@@ -11,6 +11,7 @@ use Illuminate\Validation\Validator;
 use ReflectionClass;
 use ReflectionNamedType;
 use RuntimeException;
+use Softdomain\UsecaseCommand\Sanitizer;
 
 abstract class UsecaseCommand
 {
@@ -22,16 +23,12 @@ abstract class UsecaseCommand
     {
         $input = $fields + $files + $this->defaults();
 
+        $this->sanitize($input);
         $this->validate($input);
         $this->hydrate($input);
 
         $this->fields = $fields;
         $this->files  = $files;
-    }
-
-    protected function translator(): TranslatorContract
-    {
-        return app(Translator::class);
     }
 
     public static function fromRequest(Request $request, array $additionalFields = []): static
@@ -72,7 +69,55 @@ abstract class UsecaseCommand
         $this->rules = $rules + $this->rules;
     }
 
-    private function validate(array $input): void
+    /**
+     * Validation rules
+     */
+    protected function rules(): array
+    {
+        return [];
+    }
+
+    public function hasFile(string $name): bool
+    {
+        return array_key_exists($name, $this->files);
+    }
+
+    public function hasNotFile(string $name): bool
+    {
+        return ! $this->hasFile($name);
+    }
+
+    /**
+     * @return UploadedFile|null
+     */
+    public function file(string $name)
+    {
+        if ($this->hasNotFile($name)) {
+            throw new RuntimeException("File $name was not uploaded.");
+        }
+
+        return $this->files[$name];
+    }
+
+    protected function translator(): TranslatorContract
+    {
+        return app(Translator::class);
+    }
+
+    private function sanitize(&$input): void
+    {
+        $sanitizers = $this->sanitizers();
+        if (! $sanitizers) {
+            return;
+        }
+
+        Sanitizer::apply(
+            input: $input, 
+            sanitizers: $sanitizers,
+        );
+    }
+
+    protected function validate(array $input): void
     {
         $rules = $this->rules + $this->rules();
         if (! $rules) {
@@ -88,28 +133,6 @@ abstract class UsecaseCommand
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
-    }
-
-    public function hasFile(string $name): bool
-    {
-        return array_key_exists($name, $this->files);
-    }
-
-    public function hasNotFile(string $name): bool
-    {
-        return ! $this->hasFile($name);
-    }
-
-    /**
-     * @return UploadedFile|UploadedFile[]|array|null
-     */
-    public function file(string $name)
-    {
-        if ($this->hasNotFile($name)) {
-            throw new RuntimeException("File $name was not uploaded.");
-        }
-
-        return $this->files[$name];
     }
 
     private function hydrate(array $input): void
@@ -146,20 +169,10 @@ abstract class UsecaseCommand
     }
 
     /**
-     * Validation rules
-     */
-    protected function rules(): array
-    {
-        return [];
-    }
-
-    /**
-     * Фильтры<br>
+     * Sanitizers for input data. Applied before validation.
      * trim, to_lower, to_upper, sanitize_string, strip_tags, strip_repeat_spaces, digits_only
-     *
-     * @return array
      */
-    protected function filters(): array
+    protected function sanitizers(): array
     {
         return [];
     }

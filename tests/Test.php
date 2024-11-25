@@ -2,20 +2,75 @@
 
 namespace Tests;
 
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\TestCase;
 use Tests\Stub\ExampleCommand;
 
 class Test extends TestCase
 {
-    public function test()
+    public function test_construct()
     {
-        $params = [
+        $fields = [
             "name"  => "My Name",
             "email" => "email@email.com",
         ];
 
-        $command = ExampleCommand::fromArray($params);
-dd($command->address);
-        $this->assertEquals($command->name, $params["name"]);
+        $command = new ExampleCommand($fields);
+
+        $this->assertEquals($fields["name"],  $command->name);
+        $this->assertEquals($fields["email"], $command->email);
+    }
+
+    public function test_construct_from_array()
+    {
+        $fields = [
+            "name"  => "My Name",
+            "email" => "email@email.com",
+        ];
+
+        $command = ExampleCommand::fromArray($fields);
+
+        $this->assertEquals($fields["name"],  $command->name);
+        $this->assertEquals($fields["email"], $command->email);
+    }
+
+    public function test_construct_from_request()
+    {
+        $fields = [
+            "name"  => "My Name",
+            "email" => "email@email.com",
+        ];
+
+        $request = new Request();
+        $request->replace($fields);
+        $command = ExampleCommand::fromRequest($request);
+
+        $this->assertEquals($fields["name"],  $command->name);
+        $this->assertEquals($fields["email"], $command->email);
+    }
+
+    public function test_default()
+    {
+        $fields = [
+            "name"  => "My Name",
+            "email" => "email@email.com",
+        ];
+
+        $command = ExampleCommand::fromArray($fields);
+
+        $this->assertEquals("Fake address", $command->address);
+    }
+
+    public function test_validate_exception()
+    {
+        $this->expectException(ValidationException::class);
+
+        $fields = [
+            "name"  => "My Name",
+            "email" => "invalid_email",
+        ];
+
+        ExampleCommand::fromArray($fields);
     }
 }
