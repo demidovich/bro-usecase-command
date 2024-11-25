@@ -27,6 +27,17 @@ class ExampleCommand extends UsecaseCommand
         ];
     }
 
+    protected function sanitizers(): array
+    {
+        return [
+            "email"   => "to_lower",
+            "address" => "strip_tags",
+        ];
+    }
+
+    /**
+     * Testing mock realization
+     */
     protected function translator(): TranslatorContract
     {
         return new TestingTranslator;

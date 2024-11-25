@@ -18,9 +18,11 @@ Thumbs.db
 Homestead.json
 Homestead.yaml
 
-# Testing
+# Composer
 /vendor
-/coverage
 /composer.lock
+
+# Testing
+/coverage
 .phpunit.cache
 .phpunit.result.cache
