@@ -5,7 +5,7 @@ stan: ## Runs a static analysis with phpstan
 	vendor/bin/phpstan analyse src
 
 test: ## Runs tests with phpunit
-	vendor/bin/phpunit
+	vendor/bin/phpunit --display-phpunit-deprecations
 
 vendor: composer.json
 	composer validate --strict
