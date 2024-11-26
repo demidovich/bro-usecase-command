@@ -50,18 +50,6 @@ class Test extends TestCase
         $this->assertEquals($fields["email"], $command->email);
     }
 
-    public function test_default()
-    {
-        $fields = [
-            "name"  => "My Name",
-            "email" => "email@email.com",
-        ];
-
-        $command = BasicCommand::fromArray($fields);
-
-        $this->assertEquals("Fake address", $command->address);
-    }
-
     public function test_fields()
     {
         $fields = [

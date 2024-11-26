@@ -3,11 +3,12 @@
 namespace Tests\Stub;
 
 use Bro\UsecaseCommand;
-use Illuminate\Contracts\Translation\Translator as TranslatorContract;
-use Tests\Stub\LaravelTranslator\MockTranslator;
+use Tests\Stub\LaravelTranslator\MockTranslatorTrait;
 
 class ArraySanitizedCommand extends UsecaseCommand
 {
+    use MockTranslatorTrait;
+
     public readonly array $emails;
 
     protected function rules(): array
@@ -23,13 +24,5 @@ class ArraySanitizedCommand extends UsecaseCommand
         return [
             "emails" => "to_lower",
         ];
-    }
-
-    /**
-     * Testing mock realization
-     */
-    protected function translator(): TranslatorContract
-    {
-        return new MockTranslator;
     }
 }

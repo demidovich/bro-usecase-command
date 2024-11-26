@@ -4,6 +4,7 @@ namespace Tests;
 
 use Illuminate\Http\UploadedFile;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Tests\Stub\FileCommand;
 
 class FileTest extends TestCase
@@ -34,7 +35,7 @@ class FileTest extends TestCase
         $command = new FileCommand([], $files);
 
         $this->assertTrue($command->hasFile("nullable_file"));
-        $this->assertEquals($command->file("nullable_file"), null);
+        $this->assertNull($command->file("nullable_file"));
     }
 
     public function test_skip_nullable_file()
@@ -46,6 +47,18 @@ class FileTest extends TestCase
         $command = new FileCommand([], $files);
 
         $this->assertTrue($command->hasNotFile("nullable_file"));
+    }
+
+    public function test_missing_file_access_exception()
+    {
+        $this->expectException(RuntimeException::class);
+
+        $files = [
+            "required_file" => UploadedFile::fake()->create("fake_file.txt", 1),
+        ];
+
+        $command = new FileCommand([], $files);
+        $command->file("nullable_file");
     }
 
     public function test_files()

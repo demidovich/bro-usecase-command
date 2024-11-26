@@ -3,11 +3,12 @@
 namespace Tests\Stub;
 
 use Bro\UsecaseCommand;
-use Illuminate\Contracts\Translation\Translator as TranslatorContract;
-use Tests\Stub\LaravelTranslator\MockTranslator;
+use Tests\Stub\LaravelTranslator\MockTranslatorTrait;
 
 class ArrayCommand extends UsecaseCommand
 {
+    use MockTranslatorTrait;
+
     public readonly array $users;
 
     protected function rules(): array
@@ -17,13 +18,5 @@ class ArrayCommand extends UsecaseCommand
             "users.*"      => "required|array",
             "users.*.name" => "required|string|min:1",
         ];
-    }
-
-    /**
-     * Testing mock realization
-     */
-    protected function translator(): TranslatorContract
-    {
-        return new MockTranslator;
     }
 }

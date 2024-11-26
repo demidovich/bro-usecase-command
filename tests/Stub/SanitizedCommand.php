@@ -3,11 +3,12 @@
 namespace Tests\Stub;
 
 use Bro\UsecaseCommand;
-use Illuminate\Contracts\Translation\Translator as TranslatorContract;
-use Tests\Stub\LaravelTranslator\MockTranslator;
+use Tests\Stub\LaravelTranslator\MockTranslatorTrait;
 
 class SanitizedCommand extends UsecaseCommand
 {
+    use MockTranslatorTrait;
+
     public readonly string $trim;
     public readonly string $strip_tags;
     public readonly string $strip_repeat_spaces;
@@ -27,13 +28,5 @@ class SanitizedCommand extends UsecaseCommand
             "to_upper"            => "to_upper",
             "combined_field"      => "trim|to_lower|strip_tags",
         ];
-    }
-
-    /**
-     * Testing mock realization
-     */
-    protected function translator(): TranslatorContract
-    {
-        return new MockTranslator;
     }
 }

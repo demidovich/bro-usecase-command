@@ -21,9 +21,10 @@ abstract class UsecaseCommand
 
     final public function __construct(array $fields = [], array $files = [])
     {
-        $input = $fields + $files + $this->defaults();
-
+        $input = $fields + $this->defaults();
         $this->sanitize($input);
+
+        $input = $input + $files;
         $this->validate($input);
         $this->hydrate($input);
 
@@ -130,34 +131,75 @@ abstract class UsecaseCommand
         }
     }
 
+    // Guess nullable values for: array, ?scalar, bool
     private function hydrate(array $input): void
     {
         $class = new ReflectionClass(get_called_class());
 
         foreach ($class->getProperties() as $property) {
             $name = $property->getName();
+            $type = $property->getType();
 
-            // чтобы можно было создавать команды с частичным набором данных
-            // throw new RuntimeException("Missing value of command attribute $name");
-            if (! array_key_exists($name, $input)) {
+            if (array_key_exists($name, $input)) {
+                $value = $input[$name];
+                if ($property->hasType() && $value !== null) {
+                    $this->castProperty($value, $type);
+                }
+            }
+
+            elseif (! $type) {
                 continue;
             }
 
-            $value = $input[$name];
-            if ($property->hasType() && $value !== null) {
-                $this->castProperty($value, $property->getType());
+            elseif ($type->getName() === "array") {
+                $value = [];
+            }
+
+            elseif ($type->getName() === "bool") {
+                $value = false;
+            }
+
+            elseif ($type->allowsNull()) {
+                $value = null;
+            }
+
+            else {
+                continue;
             }
 
             $property->setValue($this, $value);
         }
     }
 
+    // // Strong version
+    // private function hydrate(array $input): void
+    // {
+    //     $class = new ReflectionClass(get_called_class());
+
+    //     foreach ($class->getProperties() as $property) {
+    //         $name = $property->getName();
+
+    //         // чтобы можно было создавать команды с частичным набором данных
+    //         // throw new RuntimeException("Missing value of command attribute $name");
+    //         if (! array_key_exists($name, $input)) {
+    //             continue;
+    //         }
+
+    //         $value = $input[$name];
+    //         if ($property->hasType() && $value !== null) {
+    //             $this->castProperty($value, $property->getType());
+    //         }
+
+    //         $property->setValue($this, $value);
+    //     }
+    // }
+
     private function castProperty(&$property, ReflectionNamedType $type): void
     {
         $typeName = $type->getName();
 
         if ($type->isBuiltin()) {
-            settype($property, $type->getName());
+            settype($property, $typeName);
         } else {
             $property = new $typeName($property);
         }

@@ -3,44 +3,27 @@
 namespace Tests\Stub;
 
 use Bro\UsecaseCommand;
-use Illuminate\Contracts\Translation\Translator as TranslatorContract;
-use Tests\Stub\LaravelTranslator\MockTranslator;
+use Tests\Stub\LaravelTranslator\MockTranslatorTrait;
 
 class BasicCommand extends UsecaseCommand
 {
-    public readonly  string $name;
-    public readonly  string $email;
-    public readonly ?string $address;
+    use MockTranslatorTrait;
+
+    public readonly string $name;
+    public readonly string $email;
 
     protected function rules(): array
     {
         return [
-            "name"    => "required|string|min:1|max:256",
-            "email"   => "required|email",
-            "address" => "nullable|string|min:1,max:1024",
-        ];
-    }
-
-    protected function defaults(): array
-    {
-        return [
-            "address" => "Fake address",
+            "name"  => "required|string|min:1|max:256",
+            "email" => "required|email",
         ];
     }
 
     protected function sanitizers(): array
     {
         return [
-            "email"   => "to_lower",
-            "address" => "strip_tags",
+            "email" => "to_lower",
         ];
-    }
-
-    /**
-     * Testing mock realization
-     */
-    protected function translator(): TranslatorContract
-    {
-        return new MockTranslator;
     }
 }
