@@ -4,8 +4,9 @@ namespace Tests\Stub;
 
 use Bro\UsecaseCommand;
 use Illuminate\Contracts\Translation\Translator as TranslatorContract;
+use Tests\Stub\LaravelTranslator\MockTranslator;
 
-class ExampleSanitizerCommand extends UsecaseCommand
+class SanitizedCommand extends UsecaseCommand
 {
     public readonly string $trim;
     public readonly string $strip_tags;
@@ -33,6 +34,6 @@ class ExampleSanitizerCommand extends UsecaseCommand
      */
     protected function translator(): TranslatorContract
     {
-        return new TestingTranslator;
+        return new MockTranslator;
     }
 }

@@ -4,7 +4,7 @@ namespace Tests;
 
 use Illuminate\Http\UploadedFile;
 use PHPUnit\Framework\TestCase;
-use Tests\Stub\ExampleFileCommand;
+use Tests\Stub\FileCommand;
 
 class FileTest extends TestCase
 {
@@ -15,7 +15,7 @@ class FileTest extends TestCase
             "nullable_file" => UploadedFile::fake()->create("fake_file.txt", 1),
         ];
 
-        $command = new ExampleFileCommand([], $files);
+        $command = new FileCommand([], $files);
 
         $this->assertTrue($command->hasFile("required_file"));
         $this->assertTrue($command->file("required_file") instanceof UploadedFile);
@@ -31,7 +31,7 @@ class FileTest extends TestCase
             "nullable_file" => null,
         ];
 
-        $command = new ExampleFileCommand([], $files);
+        $command = new FileCommand([], $files);
 
         $this->assertTrue($command->hasFile("nullable_file"));
         $this->assertEquals($command->file("nullable_file"), null);
@@ -43,8 +43,19 @@ class FileTest extends TestCase
             "required_file" => UploadedFile::fake()->create("fake_file.txt", 1),
         ];
 
-        $command = new ExampleFileCommand([], $files);
+        $command = new FileCommand([], $files);
 
         $this->assertTrue($command->hasNotFile("nullable_file"));
+    }
+
+    public function test_files()
+    {
+        $files = [
+            "required_file" => UploadedFile::fake()->create("fake_file.txt", 1),
+        ];
+
+        $command = new FileCommand([], $files);
+
+        $this->assertCount(1, $command->files());
     }
 }

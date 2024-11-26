@@ -5,7 +5,7 @@ namespace Tests;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\TestCase;
-use Tests\Stub\ExampleCommand;
+use Tests\Stub\BasicCommand;
 
 class Test extends TestCase
 {
@@ -16,7 +16,7 @@ class Test extends TestCase
             "email" => "email@email.com",
         ];
 
-        $command = new ExampleCommand($fields);
+        $command = new BasicCommand($fields);
 
         $this->assertEquals($fields["name"],  $command->name);
         $this->assertEquals($fields["email"], $command->email);
@@ -29,7 +29,7 @@ class Test extends TestCase
             "email" => "email@email.com",
         ];
 
-        $command = ExampleCommand::fromArray($fields);
+        $command = BasicCommand::fromArray($fields);
 
         $this->assertEquals($fields["name"],  $command->name);
         $this->assertEquals($fields["email"], $command->email);
@@ -44,7 +44,7 @@ class Test extends TestCase
 
         $request = new Request();
         $request->replace($fields);
-        $command = ExampleCommand::fromRequest($request);
+        $command = BasicCommand::fromRequest($request);
 
         $this->assertEquals($fields["name"],  $command->name);
         $this->assertEquals($fields["email"], $command->email);
@@ -57,9 +57,21 @@ class Test extends TestCase
             "email" => "email@email.com",
         ];
 
-        $command = ExampleCommand::fromArray($fields);
+        $command = BasicCommand::fromArray($fields);
 
         $this->assertEquals("Fake address", $command->address);
+    }
+
+    public function test_filelds()
+    {
+        $fields = [
+            "name"  => "My Name",
+            "email" => "email@email.com",
+        ];
+
+        $command = BasicCommand::fromArray($fields);
+
+        $this->assertCount(2, $command->fields());
     }
 
     public function test_validate_exception()
@@ -71,6 +83,6 @@ class Test extends TestCase
             "email" => "invalid_email",
         ];
 
-        ExampleCommand::fromArray($fields);
+        BasicCommand::fromArray($fields);
     }
 }

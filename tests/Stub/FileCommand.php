@@ -4,8 +4,9 @@ namespace Tests\Stub;
 
 use Bro\UsecaseCommand;
 use Illuminate\Contracts\Translation\Translator as TranslatorContract;
+use Tests\Stub\LaravelTranslator\MockTranslator;
 
-class ExampleFileCommand extends UsecaseCommand
+class FileCommand extends UsecaseCommand
 {
     public readonly ?string $nullable_file;
     public readonly  string $required_file;
@@ -23,6 +24,6 @@ class ExampleFileCommand extends UsecaseCommand
      */
     protected function translator(): TranslatorContract
     {
-        return new TestingTranslator;
+        return new MockTranslator;
     }
 }
