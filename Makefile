@@ -5,7 +5,10 @@ stan: ## Runs a static analysis with phpstan
 	vendor/bin/phpstan analyse src
 
 test: ## Runs tests with phpunit
-	vendor/bin/phpunit --display-phpunit-deprecations
+	XDEBUG_MODE=coverage vendor/bin/phpunit --display-phpunit-deprecations
+
+coverage: ## Runs coverage tests
+	XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text --display-phpunit-deprecations
 
 vendor: composer.json
 	composer validate --strict
