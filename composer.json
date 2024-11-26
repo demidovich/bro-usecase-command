@@ -1,6 +1,6 @@
 {
-    "name": "demidovich/e1-valid-dto",
-    "description": "Simple DTO validation for Laravel.",
+    "name": "demidovich/bro-usecase-command",
+    "description": "Simple validated DTO for Laravel.",
     "license": "MIT",
     "type": "library",
     "keywords": [
@@ -31,7 +31,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "Softdomain\\": "src/Softdomain"
+            "Bro\\": "src/Bro"
         }
     },
     "autoload-dev": {

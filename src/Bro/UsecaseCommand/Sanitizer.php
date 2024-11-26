@@ -1,6 +1,6 @@
 <?php
 
-namespace Softdomain\UsecaseCommand;
+namespace Bro\UsecaseCommand;
 
 use RuntimeException;
 
