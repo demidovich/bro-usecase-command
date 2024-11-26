@@ -2,13 +2,14 @@
 
 namespace Tests\Stub;
 
+use Bro\UsecaseCommand;
 use Illuminate\Contracts\Translation\Translator as TranslatorContract;
-use Softdomain\UsecaseCommand;
+use Tests\Stub\LaravelTranslator\MockTranslator;
 
-class ExampleCommand extends UsecaseCommand
+class BasicCommand extends UsecaseCommand
 {
-    public readonly string $name;
-    public readonly string $email;
+    public readonly  string $name;
+    public readonly  string $email;
     public readonly ?string $address;
 
     protected function rules(): array
@@ -40,6 +41,6 @@ class ExampleCommand extends UsecaseCommand
      */
     protected function translator(): TranslatorContract
     {
-        return new TestingTranslator;
+        return new MockTranslator;
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Stub;
+namespace Tests\Stub\LaravelTranslator;
 
 use Illuminate\Contracts\Translation\Translator as TranslatorContract;
 
-class TestingTranslator implements TranslatorContract
+class MockTranslator implements TranslatorContract
 {
     /**
      * Get the translation for a given key.

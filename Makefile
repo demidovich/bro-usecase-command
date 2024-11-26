@@ -8,7 +8,7 @@ test: ## Runs tests with phpunit
 	XDEBUG_MODE=coverage vendor/bin/phpunit --display-phpunit-deprecations
 
 coverage: ## Runs coverage tests
-	XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text --display-phpunit-deprecations
+	XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text --display-phpunit-deprecations
 
 vendor: composer.json
 	composer validate --strict

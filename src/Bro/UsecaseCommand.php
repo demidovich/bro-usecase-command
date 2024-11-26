@@ -1,7 +1,8 @@
 <?php
 
-namespace Softdomain;
+namespace Bro;
 
+use Bro\UsecaseCommand\Sanitizer;
 use Illuminate\Contracts\Translation\Translator as TranslatorContract;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -11,7 +12,6 @@ use Illuminate\Validation\Validator;
 use ReflectionClass;
 use ReflectionNamedType;
 use RuntimeException;
-use Softdomain\UsecaseCommand\Sanitizer;
 
 abstract class UsecaseCommand
 {
@@ -62,11 +62,6 @@ abstract class UsecaseCommand
             $other->fields(), 
             $other->files(),
         );
-    }
-
-    public function setRules(array $rules): void
-    {
-        $this->rules = $rules + $this->rules;
     }
 
     /**
