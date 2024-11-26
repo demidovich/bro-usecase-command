@@ -8,8 +8,8 @@ use Tests\Stub\LaravelTranslator\MockTranslator;
 
 class BasicCommand extends UsecaseCommand
 {
-    public readonly string $name;
-    public readonly string $email;
+    public readonly  string $name;
+    public readonly  string $email;
     public readonly ?string $address;
 
     protected function rules(): array

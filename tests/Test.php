@@ -62,7 +62,7 @@ class Test extends TestCase
         $this->assertEquals("Fake address", $command->address);
     }
 
-    public function test_filelds()
+    public function test_fields()
     {
         $fields = [
             "name"  => "My Name",

@@ -64,11 +64,6 @@ abstract class UsecaseCommand
         );
     }
 
-    public function setRules(array $rules): void
-    {
-        $this->rules = $rules + $this->rules;
-    }
-
     /**
      * Validation rules
      */
