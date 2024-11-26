@@ -2,9 +2,9 @@ name: Phpunit test
 
 on:
   push:
-    branches: [ "coverage" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "coverage" ]
+    branches: [ "master" ]
 
 permissions:
   contents: read
