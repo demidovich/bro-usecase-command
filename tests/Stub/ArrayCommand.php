@@ -9,9 +9,12 @@ class ArrayCommand extends UsecaseCommand
 {
     use MockTranslatorTrait;
 
-    public readonly array $users;
+    public function __construct(
+        public readonly array $users = [],
+    ) {  
+    }
 
-    protected function rules(): array
+    protected static function rules(): array
     {
         return [
             "users"        => "required|array",

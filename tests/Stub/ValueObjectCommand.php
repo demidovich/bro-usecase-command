@@ -10,9 +10,12 @@ class ValueObjectCommand extends UsecaseCommand
 {
     use MockTranslatorTrait;
 
-    public readonly Carbon $time;
+    public function __construct(
+        public readonly Carbon $time,
+    ) {  
+    }
 
-    protected function rules(): array
+    protected static function rules(): array
     {
         return [
             "time" => "required|date_format:Y-m-d H:i:s",

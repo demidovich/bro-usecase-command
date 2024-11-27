@@ -2,57 +2,45 @@
 
 namespace Tests;
 
+use Bro\UsecaseCommand\Sanitizer;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Tests\Stub\SanitizedCommand;
+use RuntimeException;
 
 class SanitizerTest extends TestCase
 {
-    public function test_trim()
+    public static function methodsProvider(): array
     {
-        $command = new SanitizedCommand(["trim" => " Value    "]);
-
-        $this->assertEquals("Value",  $command->trim);
+        return [
+            "trim"                => ["trim",                " Value   ", "Value"  ],
+            "strip_tags"          => ["strip_tags",          "<br>Value", "Value"  ],
+            "strip_repeat_spaces" => ["strip_repeat_spaces", "Value   A", "Value A"],
+            "digits_only"         => ["digits_only",         "+7(9) 99-", "7999"   ],
+            "to_upper"            => ["to_upper",            "value",     "VALUE"  ],
+            "to_lower"            => ["to_lower",            "VALUE",     "value"  ],
+            "combined1"           => ["trim|strip_tags",     "<br> <br>", ""       ],
+            "combined2"           => ["to_lower|trim",       " Value   ", "value"  ],
+        ];
     }
 
-    public function test_strip_tags()
+    #[DataProvider('methodsProvider')]
+    public function test_methods(string $method, string $value, string $expected)
     {
-        $command = new SanitizedCommand(["strip_tags" => "<br>Value"]);
+        $input   = ["v" => $value];
+        $methods = ["v" => $method];
 
-        $this->assertEquals("Value", $command->strip_tags);
+        Sanitizer::apply($input, $methods);
+
+        $this->assertEquals($expected, $input["v"]);
     }
 
-    public function test_strip_repeat_spaces()
+    public function test_missing_method_error()
     {
-        $command = new SanitizedCommand(["strip_repeat_spaces" => "Value   A"]);
+        $this->expectException(RuntimeException::class);
 
-        $this->assertEquals("Value A", $command->strip_repeat_spaces);
-    }
+        $input   = ["v" => "1"];
+        $methods = ["v" => "missing_method"];
 
-    public function test_digits_only()
-    {
-        $command = new SanitizedCommand(["digits_only" => "+7(999) 999-99-99"]);
-
-        $this->assertEquals("79999999999", $command->digits_only);
-    }
-
-    public function test_to_upper()
-    {
-        $command = new SanitizedCommand(["to_upper" => "value"]);
-
-        $this->assertEquals("VALUE", $command->to_upper);
-    }
-
-    public function test_to_lower()
-    {
-        $command = new SanitizedCommand(["to_lower" => "VALUE"]);
-
-        $this->assertEquals("value", $command->to_lower);
-    }
-
-    public function test_combined()
-    {
-        $command = new SanitizedCommand(["combined_field" => " VALUE<br> "]);
-
-        $this->assertEquals("value", $command->combined_field);
+        Sanitizer::apply($input, $methods);
     }
 }

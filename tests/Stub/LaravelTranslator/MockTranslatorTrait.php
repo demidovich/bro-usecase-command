@@ -9,7 +9,7 @@ trait MockTranslatorTrait
     /**
      * Testing mock realization
      */
-    protected function translator(): TranslatorContract
+    protected static function translator(): TranslatorContract
     {
         return new MockTranslator;
     }

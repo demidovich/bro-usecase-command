@@ -15,34 +15,7 @@ use RuntimeException;
 
 abstract class UsecaseCommand
 {
-    private array $rules  = [];
-    private array $fields = [];
     private array $files  = [];
-
-    final public function __construct(array $fields = [], array $files = [])
-    {
-        $input = $fields + $this->defaults();
-        $this->sanitize($input);
-
-        $input = $input + $files;
-        $this->validate($input);
-        $this->hydrate($input);
-
-        $this->fields = $fields;
-        $this->files  = $files;
-    }
-
-    public static function fromRequest(Request $request, array $additionalFields = []): static
-    {
-        $class = get_called_class();
-        $body  = json_decode($request->getContent(), true) ?? [];
-        $input = $additionalFields + $body + $request->all();
-
-        return new $class(
-            $input, 
-            $request->allFiles(),
-        );
-    }
 
     /**
      * @param array $fields
@@ -52,23 +25,143 @@ abstract class UsecaseCommand
     {
         $class = get_called_class();
 
-        return new $class($fields, $files);
+        self::sanitize($class, $fields);
+        self::validate($class, $fields + $files);
+
+        $casted = self::castedProperties(
+            get_called_class(), 
+            $fields,
+        );
+
+        $self = new $class(...$casted);
+        $self->files = $files;
+
+        return $self;
     }
 
-    public static function fromCommand(self $other): static
+    public static function fromRequest(Request $request, array $additionalFields = []): static
     {
-        $class = get_called_class();
+        $body  = json_decode($request->getContent(), true) ?? [];
+        $input = $additionalFields + $body + $request->all();
 
-        return new $class(
-            $other->fields(), 
-            $other->files(),
+        return self::fromArray(
+            $input, 
+            $request->allFiles(),
         );
+    }
+
+    protected static function translator(): TranslatorContract
+    {
+        return app(Translator::class);
+    }
+
+    private static function sanitize(string $calledClass, array &$input): void
+    {
+        $sanitizers = static::sanitizers();
+
+        if (! $sanitizers) {
+            $sanitizers = self::parentArrayableProperty($calledClass, "sanitizers");
+        }
+
+        if (! $sanitizers) {
+            return;
+        }
+
+        Sanitizer::apply(
+            input: $input, 
+            sanitizers: $sanitizers,
+        );
+    }
+
+    protected static function validate(string $calledClass, array $input): void
+    {
+        $rules = static::rules();
+
+        if (! $rules) {
+            $rules = self::parentArrayableProperty($calledClass, "rules");
+        }
+
+        if (! $rules) {
+            return;
+        }
+
+        $validator = new Validator(
+            static::translator(),
+            $input,
+            $rules,
+        );
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+    }
+
+    private static function parentArrayableProperty(string $class, string $property): array
+    {
+        $class = new ReflectionClass($class);
+        if (! $class->hasProperty($property)) {
+            return [];
+        }
+
+        $value = $class->getProperty($property)->getDefaultValue();
+        if (! is_array($value)) {
+            throw new RuntimeException(
+                "Property \"{$property}\" of class \"{$class}\" is not an array."
+            );
+        }
+
+        return $value;
     }
 
     /**
      * Validation rules
      */
-    protected function rules(): array
+    protected static function rules(): array
+    {
+        return [];
+    }
+
+    private static function castedProperties(string $calledClass, array $input): array
+    {
+        $class = new ReflectionClass($calledClass);
+        if (! $class->hasMethod("__construct")) {
+            return $input;
+        }
+
+        $results = [];
+        foreach ($class->getConstructor()->getParameters() as $property) {
+            $name = $property->getName();
+            if (! array_key_exists($name, $input)) {
+                continue;
+            }
+
+            $value = $input[$name];
+            if ($property->hasType() && $value !== null) {
+                self::castValue($value, $property->getType());
+            }
+
+            $results[$name] = $value;
+        }
+
+        return $results;
+    }
+
+    private static function castValue(&$value, ReflectionNamedType $type): void
+    {
+        $typeName = $type->getName();
+
+        if ($type->isBuiltin()) {
+            settype($value, $typeName);
+        } else {
+            $value = new $typeName($value);
+        }
+    }
+
+    /**
+     * Sanitizers for input data. Applied before validation.
+     * trim, to_lower, to_upper, sanitize_string, strip_tags, strip_repeat_spaces, digits_only
+     */
+    protected static function sanitizers(): array
     {
         return [];
     }
@@ -95,140 +188,11 @@ abstract class UsecaseCommand
         return $this->files[$name];
     }
 
-    protected function translator(): TranslatorContract
-    {
-        return app(Translator::class);
-    }
-
-    private function sanitize(&$input): void
-    {
-        $sanitizers = $this->sanitizers();
-        if (! $sanitizers) {
-            return;
-        }
-
-        Sanitizer::apply(
-            input: $input, 
-            sanitizers: $sanitizers,
-        );
-    }
-
-    protected function validate(array $input): void
-    {
-        $rules = $this->rules + $this->rules();
-        if (! $rules) {
-            return;
-        }
-
-        $validator = new Validator(
-            $this->translator(),
-            $input,
-            $rules,
-        );
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-    }
-
-    // Guess nullable values for: array, ?scalar, bool
-    private function hydrate(array $input): void
-    {
-        $class = new ReflectionClass(get_called_class());
-
-        foreach ($class->getProperties() as $property) {
-            $name = $property->getName();
-            $type = $property->getType();
-
-            if (array_key_exists($name, $input)) {
-                $value = $input[$name];
-                if ($property->hasType() && $value !== null) {
-                    $this->castProperty($value, $type);
-                }
-            }
-
-            elseif (! $type) {
-                continue;
-            }
-
-            elseif ($type->getName() === "array") {
-                $value = [];
-            }
-
-            elseif ($type->getName() === "bool") {
-                $value = false;
-            }
-
-            elseif ($type->allowsNull()) {
-                $value = null;
-            }
-
-            else {
-                continue;
-            }
-
-            $property->setValue($this, $value);
-        }
-    }
-
-    // // Strong version
-    // private function hydrate(array $input): void
-    // {
-    //     $class = new ReflectionClass(get_called_class());
-
-    //     foreach ($class->getProperties() as $property) {
-    //         $name = $property->getName();
-
-    //         // чтобы можно было создавать команды с частичным набором данных
-    //         // throw new RuntimeException("Missing value of command attribute $name");
-    //         if (! array_key_exists($name, $input)) {
-    //             continue;
-    //         }
-
-    //         $value = $input[$name];
-    //         if ($property->hasType() && $value !== null) {
-    //             $this->castProperty($value, $property->getType());
-    //         }
-
-    //         $property->setValue($this, $value);
-    //     }
-    // }
-
-    private function castProperty(&$property, ReflectionNamedType $type): void
-    {
-        $typeName = $type->getName();
-
-        if ($type->isBuiltin()) {
-            settype($property, $typeName);
-        } else {
-            $property = new $typeName($property);
-        }
-    }
-
-    /**
-     * Sanitizers for input data. Applied before validation.
-     * trim, to_lower, to_upper, sanitize_string, strip_tags, strip_repeat_spaces, digits_only
-     */
-    protected function sanitizers(): array
-    {
-        return [];
-    }
-
-    public function fields(): array
-    {
-        return $this->fields;
-    }
-
     /**
      * @return UploadedFile[]
      */
     public function files(): array
     {
         return $this->files;
-    }
-
-    protected function defaults(): array
-    {
-        return [];
     }
 }

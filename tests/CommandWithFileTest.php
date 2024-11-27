@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Tests\Stub\FileCommand;
 
-class FileTest extends TestCase
+class CommandWithFileTest extends TestCase
 {
     public function test_file()
     {
@@ -16,7 +16,7 @@ class FileTest extends TestCase
             "nullable_file" => UploadedFile::fake()->create("fake_file.txt", 1),
         ];
 
-        $command = new FileCommand([], $files);
+        $command = FileCommand::fromArray([], $files);
 
         $this->assertTrue($command->hasFile("required_file"));
         $this->assertTrue($command->file("required_file") instanceof UploadedFile);
@@ -32,7 +32,7 @@ class FileTest extends TestCase
             "nullable_file" => null,
         ];
 
-        $command = new FileCommand([], $files);
+        $command = FileCommand::fromArray([], $files);
 
         $this->assertTrue($command->hasFile("nullable_file"));
         $this->assertNull($command->file("nullable_file"));
@@ -44,7 +44,7 @@ class FileTest extends TestCase
             "required_file" => UploadedFile::fake()->create("fake_file.txt", 1),
         ];
 
-        $command = new FileCommand([], $files);
+        $command = FileCommand::fromArray([], $files);
 
         $this->assertTrue($command->hasNotFile("nullable_file"));
     }
@@ -57,7 +57,7 @@ class FileTest extends TestCase
             "required_file" => UploadedFile::fake()->create("fake_file.txt", 1),
         ];
 
-        $command = new FileCommand([], $files);
+        $command = FileCommand::fromArray([], $files);
         $command->file("nullable_file");
     }
 
@@ -67,7 +67,7 @@ class FileTest extends TestCase
             "required_file" => UploadedFile::fake()->create("fake_file.txt", 1),
         ];
 
-        $command = new FileCommand([], $files);
+        $command = FileCommand::fromArray([], $files);
 
         $this->assertCount(1, $command->files());
     }
