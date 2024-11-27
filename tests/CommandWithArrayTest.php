@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Stub\ArrayCommand;
 use Tests\Stub\ArraySanitizedCommand;
 
-class ArrayTest extends TestCase
+class CommandWithArrayTest extends TestCase
 {
     public function test()
     {
@@ -18,7 +18,7 @@ class ArrayTest extends TestCase
             ],
         ];
 
-        $command = new ArrayCommand($fields);
+        $command = ArrayCommand::fromArray($fields);
 
         $this->assertCount(1, $command->users);
         $this->assertNotEmpty(1, $command->users[0]["name"]);
@@ -33,7 +33,7 @@ class ArrayTest extends TestCase
             ],
         ];
 
-        $command = new ArraySanitizedCommand($fields);
+        $command = ArraySanitizedCommand::fromArray($fields);
 
         $this->assertCount(1, $command->emails);
         $this->assertNotEmpty(1, $command->emails[0]);

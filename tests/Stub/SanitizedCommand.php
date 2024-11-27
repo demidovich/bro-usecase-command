@@ -9,24 +9,17 @@ class SanitizedCommand extends UsecaseCommand
 {
     use MockTranslatorTrait;
 
-    public readonly string $trim;
-    public readonly string $strip_tags;
-    public readonly string $strip_repeat_spaces;
-    public readonly string $digits_only;
-    public readonly string $to_lower;
-    public readonly string $to_upper;
-    public readonly string $combined_field;
+    public function __construct(
+        public readonly ?string $text  = null,
+        public readonly ?string $email = null,
+    ) {  
+    }
 
-    protected function sanitizers(): array
+    protected static function sanitizers(): array
     {
         return [
-            "trim"                => "trim",
-            "strip_tags"          => "strip_tags",
-            "strip_repeat_spaces" => "strip_repeat_spaces",
-            "digits_only"         => "digits_only",
-            "to_lower"            => "to_lower",
-            "to_upper"            => "to_upper",
-            "combined_field"      => "trim|to_lower|strip_tags",
+            "text"  => "strip_tags|trim",
+            "email" => "to_lower",
         ];
     }
 }

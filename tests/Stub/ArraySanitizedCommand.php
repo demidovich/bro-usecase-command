@@ -9,9 +9,12 @@ class ArraySanitizedCommand extends UsecaseCommand
 {
     use MockTranslatorTrait;
 
-    public readonly array $emails;
+    public function __construct(
+        public readonly array $emails,
+    ) {  
+    }
 
-    protected function rules(): array
+    protected static function rules(): array
     {
         return [
             "emails"   => "required|array",
@@ -19,7 +22,7 @@ class ArraySanitizedCommand extends UsecaseCommand
         ];
     }
 
-    protected function sanitizers(): array
+    protected static function sanitizers(): array
     {
         return [
             "emails" => "to_lower",

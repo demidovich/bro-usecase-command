@@ -9,10 +9,13 @@ class BasicCommand extends UsecaseCommand
 {
     use MockTranslatorTrait;
 
-    public readonly string $name;
-    public readonly string $email;
+    public function __construct(
+        public readonly string $name,
+        public readonly string $email,
+    ) {  
+    }
 
-    protected function rules(): array
+    protected static function rules(): array
     {
         return [
             "name"  => "required|string|min:1|max:256",
@@ -20,7 +23,7 @@ class BasicCommand extends UsecaseCommand
         ];
     }
 
-    protected function sanitizers(): array
+    protected static function sanitizers(): array
     {
         return [
             "email" => "to_lower",

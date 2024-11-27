@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Tests\Stub\ValueObjectCommand;
 
-class ValueObjectTest extends TestCase
+class CommandWithValueObjectTest extends TestCase
 {
     public function test_file()
     {
@@ -14,7 +14,7 @@ class ValueObjectTest extends TestCase
             "time" => "2020-01-01 00:00:00",
         ];
 
-        $command = new ValueObjectCommand($fields);
+        $command = ValueObjectCommand::fromArray($fields);
 
         $this->assertNotEmpty($command->time);
         $this->assertInstanceOf(Carbon::class, $command->time);
