@@ -20,6 +20,8 @@ abstract class UsecaseCommand
     /**
      * @param array $fields
      * @param UploadedFile[] $files
+     * 
+     * @throws ValidationException
      */
     public static function fromArray(array $fields, array $files = []): static
     {
@@ -39,6 +41,9 @@ abstract class UsecaseCommand
         return $self;
     }
 
+    /**
+     * @throws ValidationException
+     */
     public static function fromRequest(Request $request, array $additionalFields = []): static
     {
         $body  = json_decode($request->getContent(), true) ?? [];
@@ -63,16 +68,15 @@ abstract class UsecaseCommand
             $sanitizers = self::parentArrayableProperty($calledClass, "sanitizers");
         }
 
-        if (! $sanitizers) {
-            return;
-        }
-
         Sanitizer::apply(
             input: $input, 
             sanitizers: $sanitizers,
         );
     }
 
+    /**
+     * @throws ValidationException
+     */
     protected static function validate(string $calledClass, array $input): void
     {
         $rules = static::rules();
@@ -173,7 +177,7 @@ abstract class UsecaseCommand
 
     public function hasNotFile(string $name): bool
     {
-        return ! $this->hasFile($name);
+        return ! array_key_exists($name, $this->files);
     }
 
     /**
@@ -182,7 +186,7 @@ abstract class UsecaseCommand
     public function file(string $name)
     {
         if ($this->hasNotFile($name)) {
-            throw new RuntimeException("File $name was not uploaded.");
+            throw new RuntimeException("File \"{$name}\" was not uploaded.");
         }
 
         return $this->files[$name];
