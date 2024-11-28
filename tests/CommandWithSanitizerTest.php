@@ -19,4 +19,16 @@ class CommandWithSanitizerTest extends TestCase
         $this->assertEquals("Text", $command->text);
         $this->assertEquals("email@email.com", $command->email);
     }
+
+    public function test_partial_input()
+    {
+        $input = [
+            "text" => " Text<br>   ",
+        ];
+
+        $command = SanitizedCommand::fromArray($input);
+
+        $this->assertEquals("Text", $command->text);
+        $this->assertNull($command->email);
+    }
 }
