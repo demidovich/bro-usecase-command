@@ -11,15 +11,19 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 use ReflectionClass;
 use ReflectionNamedType;
+use ReflectionParameter;
 use RuntimeException;
 
 abstract class UsecaseCommand
 {
-    private array $files  = [];
+    /** @var array<string, UploadedFile> */
+    private array $files = [];
 
     /**
-     * @param array $fields
-     * @param UploadedFile[] $files
+     * @param array<string, mixed> $fields
+     * @param array<string, UploadedFile> $files
+     * 
+     * @throws ValidationException
      */
     public static function fromArray(array $fields, array $files = []): static
     {
@@ -39,6 +43,10 @@ abstract class UsecaseCommand
         return $self;
     }
 
+    /**
+     * @param array<string, mixed> $additionalFields
+     * @throws ValidationException
+     */
     public static function fromRequest(Request $request, array $additionalFields = []): static
     {
         $body  = json_decode($request->getContent(), true) ?? [];
@@ -55,6 +63,9 @@ abstract class UsecaseCommand
         return app(Translator::class);
     }
 
+    /**
+     * @param array<string, mixed> $input
+     */
     private static function sanitize(string $calledClass, array &$input): void
     {
         $sanitizers = static::sanitizers();
@@ -63,16 +74,16 @@ abstract class UsecaseCommand
             $sanitizers = self::parentArrayableProperty($calledClass, "sanitizers");
         }
 
-        if (! $sanitizers) {
-            return;
-        }
-
         Sanitizer::apply(
             input: $input, 
             sanitizers: $sanitizers,
         );
     }
 
+    /**
+     * @param array<string, mixed> $input
+     * @throws ValidationException
+     */
     protected static function validate(string $calledClass, array $input): void
     {
         $rules = static::rules();
@@ -96,6 +107,9 @@ abstract class UsecaseCommand
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private static function parentArrayableProperty(string $class, string $property): array
     {
         $class = new ReflectionClass($class);
@@ -115,12 +129,18 @@ abstract class UsecaseCommand
 
     /**
      * Validation rules
+     * 
+     * @return array<string,mixed>
      */
     protected static function rules(): array
     {
         return [];
     }
 
+    /**
+     * @param array<string, mixed> $input
+     * @return array<string, mixed>
+     */
     private static function castedProperties(string $calledClass, array $input): array
     {
         $class = new ReflectionClass($calledClass);
@@ -137,7 +157,7 @@ abstract class UsecaseCommand
 
             $value = $input[$name];
             if ($property->hasType() && $value !== null) {
-                self::castValue($value, $property->getType());
+                self::castValue($value, $property);
             }
 
             $results[$name] = $value;
@@ -146,8 +166,16 @@ abstract class UsecaseCommand
         return $results;
     }
 
-    private static function castValue(&$value, ReflectionNamedType $type): void
+    /**
+     * @param mixed $value
+     */
+    private static function castValue(&$value, ReflectionParameter $property): void
     {
+        $type = $property->getType();
+        if (! ($type instanceof ReflectionNamedType)) {
+            return;
+        }
+
         $typeName = $type->getName();
 
         if ($type->isBuiltin()) {
@@ -160,6 +188,8 @@ abstract class UsecaseCommand
     /**
      * Sanitizers for input data. Applied before validation.
      * trim, to_lower, to_upper, sanitize_string, strip_tags, strip_repeat_spaces, digits_only
+     * 
+     * @return array<string, mixed>
      */
     protected static function sanitizers(): array
     {
@@ -173,7 +203,7 @@ abstract class UsecaseCommand
 
     public function hasNotFile(string $name): bool
     {
-        return ! $this->hasFile($name);
+        return ! array_key_exists($name, $this->files);
     }
 
     /**
@@ -182,14 +212,14 @@ abstract class UsecaseCommand
     public function file(string $name)
     {
         if ($this->hasNotFile($name)) {
-            throw new RuntimeException("File $name was not uploaded.");
+            throw new RuntimeException("File \"{$name}\" was not uploaded.");
         }
 
         return $this->files[$name];
     }
 
     /**
-     * @return UploadedFile[]
+     * @return array<string, UploadedFile>
      */
     public function files(): array
     {
