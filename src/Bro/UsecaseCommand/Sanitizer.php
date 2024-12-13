@@ -6,6 +6,10 @@ use RuntimeException;
 
 class Sanitizer
 {
+    /**
+     * @param array<string, mixed> $input
+     * @param array<string, string> $sanitizers
+     */
     public static function apply(array &$input, array $sanitizers): void
     {
         if (! $input || ! $sanitizers) {
@@ -35,10 +39,10 @@ class Sanitizer
                 // If the value is an array, the filter is applied recursively to all its values
                 if (is_array($input[$field])) {
                     array_walk_recursive($input[$field], function(&$value) use ($method) {
-                        $value = self::$method($value);
+                        $value = self::$method((string) $value);
                     });
                 } else {
-                    $input[$field] = self::$method($input[$field]);
+                    $input[$field] = self::$method((string) $input[$field]);
                 }
             }
         }
@@ -53,32 +57,33 @@ class Sanitizer
         throw new RuntimeException("Non-existent sanitizer method \"{$method}\".");
     }
 
-    protected static function trim($value)
+    protected static function trim(string $value): string
     {
         return trim($value);
     }
 
-    protected static function strip_tags($value)
+
+    protected static function strip_tags(string $value): string
     {
         return strip_tags($value);
     }
 
-    protected static function strip_repeat_spaces($value)
+    protected static function strip_repeat_spaces(string $value): string
     {
-        return preg_replace("/\s+/u", " ", $value);
+        return (string) preg_replace("/\s+/u", " ", $value);
     }
 
-    protected static function digits_only($value)
+    protected static function digits_only(string $value): string
     {
-        return preg_replace("/[^0-9]/si", "", $value);
+        return (string) preg_replace("/[^0-9]/si", "", $value);
     }
 
-    protected static function to_upper($value)
+    protected static function to_upper(string $value): string
     {
         return mb_strtoupper($value, "utf-8");
     }
 
-    protected static function to_lower($value)
+    protected static function to_lower(string $value): string
     {
         return mb_strtolower($value, "utf-8");
     }
